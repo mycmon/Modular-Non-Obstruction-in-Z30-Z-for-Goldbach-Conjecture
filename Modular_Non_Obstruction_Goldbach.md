@@ -4,6 +4,17 @@
 
 # Modular Non-Obstruction in $\mathbb{Z}/30\mathbb{Z}$ for Goldbach's Conjecture: Formal Verification in Lean 4 and Empirical Validation
 
+Michel Monfette
+mycmon@gmail.com
+
+[Chicoutimi, Canada]
+
+[https://github.com/mycmon/Modular-Non-Obstruction-in-Z30-Z-for-Goldbach-Conjecture/releases/tag/Goldbach]
+
+https://zenodo.org/account/settings/github/repository/mycmon/Modular-Non-Obstruction-in-Z30-Z-for-Goldbach-Conjecture
+
+---
+
 ## Abstract
 
 This paper establishes the complete absence of local modular obstructions for Goldbach's conjecture within the residue ring $\mathbb{Z}/30\mathbb{Z}$. By considering the complete set of reduced residue classes $\mathcal{P}_{30} = \{1, 7, 11, 13, 17, 19, 23, 29\}$, we demonstrate that every even residue class modulo $30$ is expressible as the sum of two elements from $\mathcal{P}_{30}$. We provide a complete formal proof checked by the Lean 4 interactive theorem prover, alongside a high-performance Python sieve verifying 100% coverage for all even integers $2N \ge 18$ up to $2N = 1,000,000$.

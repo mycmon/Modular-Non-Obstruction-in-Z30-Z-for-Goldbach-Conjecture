@@ -119,3 +119,12 @@ Extrait de code
 ## 📄 License
 
 This project is released under the [MIT License](https://www.google.com/search?q=LICENSE&utm_source=gemini).
+
+Michel Monfette
+mycmon@gmail.com
+
+[Chicoutimi, Canada]
+
+[https://github.com/mycmon/Modular-Non-Obstruction-in-Z30-Z-for-Goldbach-Conjecture/releases/tag/Goldbach]
+
+https://zenodo.org/account/settings/github/repository/mycmon/Modular-Non-Obstruction-in-Z30-Z-for-Goldbach-Conjecture
