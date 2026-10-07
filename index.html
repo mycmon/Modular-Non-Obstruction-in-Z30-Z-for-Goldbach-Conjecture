@@ -10,35 +10,6 @@ window.getCssVar = window.getCssVar || function(name) {
 };
 </script>
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-<script id="lumi-katex-init">
-(function(){
-  var obs=null;
-  function run(){
-    if (typeof renderMathInElement !== 'function') return;
-    if (obs) obs.disconnect();
-    var SKIP={SCRIPT:1,STYLE:1,NOSCRIPT:1,TEXTAREA:1,PRE:1,CODE:1,OPTION:1,CANVAS:1};
-    function skip(n){var p=n.parentNode;while(p){if(p.nodeName&&SKIP[p.nodeName.toUpperCase()])return true;if(p.nodeType===1&&p.namespaceURI==='http://www.w3.org/2000/svg')return true;p=p.parentNode;}return false;}
-    var re=/(^|[^\\{$])\$(?![\s\d$])([^$\n]*(?:\\[a-zA-Z]+|[=+^_*\/]|[A-Za-z]\([^)$]*\))[^$\n]*?|[A-Za-z]{1,3})\$(?!\$)/g;
-    try{
-      var w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null);
-      var nodes=[],c;while(c=w.nextNode()){nodes.push(c);}
-      nodes.forEach(function(n){if(!n.nodeValue||n.nodeValue.indexOf('$')<0)return;if(skip(n))return;var o=n.nodeValue.replace(re,function(m,pre,inner){return (typeof pre === 'number' ? Math.round(pre * 100) / 100 : pre) + '\\('+inner+'\\)';});if(o!==n.nodeValue)n.nodeValue=o;});
-    }catch(e){}
-    try{
-      renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],ignoredTags:['script','noscript','style','textarea','pre','code','option','canvas'],throwOnError:false,output:'htmlAndMathml'});
-    }catch(e){}
-    if (obs && document.body) obs.observe(document.body,{childList:true,subtree:true,characterData:true});
-  }
-  if (typeof MutationObserver !== 'undefined') {
-    obs = new MutationObserver(function(){ run(); });
-  }
-  if(document.readyState==='complete')run();else window.addEventListener('load',run);
-})();
-</script>
-
 <script id="lumi-canvas-guard">
 (function() {
   if (window.__lumiCanvasGuard) return;
@@ -942,185 +913,194 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 }
 </style>
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Visualiseur de la Roue Modulo 30</title>
-  <style>
-    /* Widget-specific structural styles only */
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      overflow-y: hidden;
-      font-family: var(--ff-sans);
-      color: var(--on-surface);
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modulo 30 Wheel Visualizer</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: hidden;
+    background: transparent;
+    font-family: var(--ff-sans, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif);
+  }
 
-    .widget-container {
-      width: 100%;
-      min-height: 280px;
-      padding: var(--spacing-m);
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-l);
-    }
+  .widget-container {
+    width: 100%;
+    min-height: 280px;
+    padding: var(--lumi-sys-spacing--m, 12px);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: var(--lumi-sys-spacing--m, 12px);
+  }
 
-    .header-card {
-      background: var(--surface-bright);
-      border: 1px solid var(--stroke-default);
-      border-radius: var(--r-m);
-      padding: var(--spacing-l);
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-xs);
-    }
+  .widget-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: var(--lumi-sys-spacing--s, 8px);
+    border-bottom: 1px solid var(--stroke-default, rgba(255,255,255,0.1));
+  }
 
-    .kpi-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: var(--spacing-m);
-      margin-top: var(--spacing-s);
-    }
+  .title-group h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--on-surface, #f8fafc);
+  }
 
-    .kpi-card {
-      background: var(--surface-dim);
-      border-radius: var(--r-s);
-      padding: var(--spacing-m);
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
+  .title-group p {
+    margin: 2px 0 0 0;
+    color: var(--on-surface-variant, #94a3b8);
+  }
 
-    .kpi-value {
-      font-family: var(--ff-mono);
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--on-surface);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+  .main-card {
+    background: var(--surface-dim, #1e293b);
+    border: 1px solid var(--stroke-default, rgba(255,255,255,0.1));
+    border-radius: var(--r-m, 12px);
+    padding: var(--lumi-sys-spacing--m, 14px);
+    display: flex;
+    flex-direction: column;
+    gap: var(--lumi-sys-spacing--m, 12px);
+  }
 
-    .kpi-value.highlight {
-      color: var(--primary);
-    }
+  .input-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
 
-    .viz-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: var(--spacing-l);
-      align-items: center;
-    }
+  .input-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary, #38bdf8);
+  }
 
-    @media (max-width: 580px) {
-      .viz-grid {
-        grid-template-columns: 1fr;
-      }
-    }
+  .big-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: var(--surface-bright, #090d16);
+    border: 2px solid var(--primary, #38bdf8);
+    border-radius: var(--r-s, 8px);
+    color: var(--on-surface, #ffffff);
+    font-size: 1.5rem;
+    font-weight: 700;
+    padding: 8px 14px;
+    font-family: var(--ff-mono, monospace);
+    letter-spacing: 0.02em;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .big-input:focus {
+    border-color: var(--positive, #22c55e);
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.25);
+  }
 
-    .canvas-card, .matrix-card {
-      background: var(--surface-bright);
-      border: 1px solid var(--stroke-default);
-      border-radius: var(--r-m);
-      padding: var(--spacing-m);
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-s);
-      align-items: center;
-    }
+  .metrics-strip {
+    display: flex;
+    gap: var(--lumi-sys-spacing--s, 8px);
+    flex-wrap: wrap;
+    align-items: center;
+  }
 
-    .matrix-container {
-      width: 100%;
-      max-width: 280px;
-      aspect-ratio: 1 / 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-    }
+  .chip-value {
+    font-weight: 700;
+    color: var(--positive, #22c55e);
+  }
+  .chip-value.channels {
+    color: var(--chart-9, #a855f7);
+  }
 
-    .matrix-grid {
-      display: grid;
-      grid-template-columns: auto repeat(8, 1fr);
-      grid-template-rows: auto repeat(8, 1fr);
-      gap: 2px;
-      width: 100%;
-      height: 100%;
-      font-family: var(--ff-mono);
-      font-size: 12px;
-      text-align: center;
-    }
+  .controls-grid {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
 
-    .matrix-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      color: var(--on-surface-variant);
-      padding: 1px;
-    }
+  .btn-multiplier {
+    border-color: var(--chart-9, #a855f7) !important;
+    color: var(--chart-9, #a855f7) !important;
+  }
+  .btn-multiplier:hover {
+    background: var(--chart-9, #a855f7) !important;
+    color: #ffffff !important;
+  }
 
-    .matrix-cell {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--surface-dim);
-      border-radius: 3px;
-      color: var(--on-surface-variant);
-      transition: background 0.2s ease, color 0.2s ease, font-weight 0.2s ease;
-    }
+  .vis-container {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--lumi-sys-spacing--m, 12px);
+  }
 
-    .matrix-cell.active {
-      background: var(--primary-container);
-      color: var(--accent-fixed);
-      font-weight: 700;
-      border: 1px solid var(--primary);
+  @media (max-width: 580px) {
+    .vis-container {
+      grid-template-columns: minmax(0, 1fr);
     }
+  }
 
-    .control-deck {
-      background: var(--surface-dim);
-      border-radius: var(--r-m);
-      padding: var(--spacing-l);
-      display: flex;
-      flex-direction: column;
-      gap: var(--spacing-m);
-    }
+  .panel {
+    background: var(--surface-dim, #1e293b);
+    border: 1px solid var(--stroke-default, rgba(255,255,255,0.1));
+    border-radius: var(--r-m, 12px);
+    padding: var(--lumi-sys-spacing--m, 12px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-sizing: border-box;
+  }
 
-    .control-group {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--spacing-s);
-    }
+  .panel-title {
+    font-weight: 600;
+    color: var(--on-surface-variant, #94a3b8);
+    margin-bottom: var(--lumi-sys-spacing--s, 8px);
+    align-self: flex-start;
+  }
 
-    .control-label {
-      min-width: 110px;
-      color: var(--on-surface-variant);
-    }
+  .matrix-wrapper {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex: 1;
+    min-height: 220px;
+    overflow-x: auto;
+  }
 
-    .input-n {
-      flex: 1;
-      min-width: 140px;
-      padding: 6px 12px;
-      border-radius: var(--r-full);
-      border: 1px solid var(--stroke-default);
-      background: var(--surface-bright);
-      color: var(--on-surface);
-      font-family: var(--ff-mono);
-      font-size: 14px;
-      outline: none;
-    }
+  .matrix-table {
+    border-collapse: collapse;
+    margin: auto;
+  }
 
-    .input-n:focus {
-      border-color: var(--primary);
-    }
+  .matrix-table th, .matrix-table td {
+    width: 28px;
+    height: 28px;
+    text-align: center;
+    font-size: 0.75rem;
+    font-family: var(--ff-mono, monospace);
+    border: 1px solid var(--stroke-default, rgba(255,255,255,0.1));
+  }
 
-    .btn-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--spacing-xs);
-    }
-  </style>
+  .matrix-table th {
+    color: var(--on-surface-variant, #94a3b8);
+    font-weight: 600;
+    background: var(--surface-bright, #141e2e);
+  }
+
+  .matrix-cell {
+    color: var(--on-surface-variant, #475569);
+    background: var(--surface, #0f172a);
+    transition: background-color 0.15s, color 0.15s;
+  }
+
+  .matrix-cell.active {
+    background: var(--primary, #0284c7);
+    color: #ffffff;
+    font-weight: 700;
+  }
+</style>
 <script id="lumi-os-theme-init">
 (function() {
   function syncBody() {
@@ -1169,167 +1149,194 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
 <body>
 
 <div class="widget-container">
-  
-  <!-- Header Card -->
-  <div class="header-card" id="header-zone">
-    <h2 class="lumi-headline-m" style="margin: 0;">Roue Modulo 30 &amp; Invariance de $M(N)$</h2>
-    <div class="lumi-body-s" style="color: var(--on-surface-variant);">
-      Structure cyclique sur le sous-ensemble coprimé $R_{30} = \{1, 7, 11, 13, 17, 19, 23, 29\}$.
+  <!-- Header -->
+  <div class="widget-header">
+    <div class="title-group">
+      <h2 id="txt-title" class="lumi-headline-m">Roue Modulo 30 &amp; Matrice M(N)</h2>
+      <p id="txt-subtitle" class="lumi-body-s">Structure algébrique et canaux ouverts</p>
+    </div>
+    <button class="lumi-btn lumi-btn--tonal lumi-btn--small" id="btn-lang" onclick="toggleLang()">EN</button>
+  </div>
+
+  <!-- Main Card Input & Controls -->
+  <div class="main-card">
+    <div class="input-label-row">
+      <span class="input-label lumi-body-s" id="txt-label-n">Grand Entier N</span>
+      <span style="color: var(--on-surface-variant);" class="lumi-caption" id="txt-even-notice">Changements par pas pairs</span>
     </div>
 
-    <div class="kpi-row">
-      <div class="kpi-card">
-        <span class="lumi-body-s control-label">Grand Entier <i>N</i></span>
-        <span class="kpi-value" id="kpi-n">14</span>
+    <input type="text" id="input-n" class="big-input" value="101009246" oninput="onInputN()" autocomplete="off" spellcheck="false">
+
+    <!-- Compact Metrics Row -->
+    <div class="metrics-strip">
+      <div class="lumi-chip">
+        <span style="color: var(--on-surface-variant);" id="txt-chip-mod">Réduction N mod 30 :</span>
+        <span class="chip-value" id="val-mod">26</span>
       </div>
-      <div class="kpi-card">
-        <span class="lumi-body-s control-label">Réduction <i>N</i> mod 30</span>
-        <span class="kpi-value highlight" id="kpi-mod">14</span>
+
+      <div class="lumi-chip">
+        <span style="color: var(--on-surface-variant);" id="txt-chip-channels">Canaux |T₃₀(N)| :</span>
+        <span class="chip-value channels" id="val-channels">3 (Minimal)</span>
       </div>
-      <div class="kpi-card">
-        <span class="lumi-body-s control-label">Canaux |<i>T</i><sub>30</sub>(<i>N</i>)|</span>
-        <span class="kpi-value highlight" id="kpi-channels">3 (≥ 3)</span>
-      </div>
+    </div>
+
+    <!-- Scale Controls -->
+    <div class="controls-grid">
+      <button class="lumi-btn lumi-btn--tonal lumi-btn--small" onclick="stepN(-2)">- 2</button>
+      <button class="lumi-btn lumi-btn--tonal lumi-btn--small" onclick="stepN(2)">+ 2</button>
+      <button class="lumi-btn lumi-btn--tonal lumi-btn--small" onclick="stepN(1000)">+ 1 000</button>
+      <button class="lumi-btn lumi-btn--tonal lumi-btn--small" onclick="stepN(10000)">+ 10 000</button>
+      <button class="lumi-btn lumi-btn--tonal lumi-btn--small" onclick="stepN(1000000)">+ 1 000 000</button>
+      <button class="lumi-btn lumi-btn--tonal lumi-btn--small btn-multiplier" onclick="multiplyN(100)">× 100 N</button>
     </div>
   </div>
 
-  <!-- Visualization Grid -->
-  <div class="viz-grid">
-    <!-- Wheel Canvas -->
-    <div class="canvas-card">
-      <div class="lumi-body-m-emphasized" style="width: 100%; text-align: left;">Cercle Trigonométrique $R_{30}$</div>
-      <div class="widget-viewport" style="position: relative; width: 100%; height: 260px; overflow: hidden; border-radius: var(--r-m);">
+  <!-- Dual Panels -->
+  <div class="vis-container">
+    <!-- Wheel Canvas Panel -->
+    <div class="panel">
+      <div class="panel-title lumi-body-s" id="txt-panel-wheel">Roue R₃₀ &amp; Cordes d'Incidence</div>
+      <div class="widget-viewport" style="position: relative; width: 100%; height: 240px; overflow: hidden; border-radius: var(--r-s, 8px);">
         <div style="position: relative; width: 100%; height: 100%; min-height: 0; overflow: hidden;">
-          <canvas id="wheelCanvas" style="display: block; width: 100%; height: 100%;" tabindex="0"></canvas>
+          <canvas id="wheelCanvas" style="display: block; width: 100%; height: 100%;"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- Matrix UI -->
-    <div class="matrix-card">
-      <div class="lumi-body-m-emphasized" style="width: 100%; text-align: left;">Matrice d'Incidence $M(N)$</div>
-      <div class="matrix-container" id="matrix-zone">
-        <!-- Matrix grid dynamically injected -->
-      </div>
+    <!-- Matrix Panel -->
+    <div class="panel">
+      <div class="panel-title lumi-body-s" id="txt-panel-matrix">Matrice d'Incidence M(N) [8 × 8]</div>
+      <div class="matrix-wrapper" id="matrixContainer"></div>
     </div>
   </div>
-
-  <!-- Control Deck -->
-  <div class="control-deck">
-    <!-- Direct Input & Parity Increments -->
-    <div class="control-group">
-      <span class="lumi-body-m control-label">Saisie de <i>N</i></span>
-      <input type="number" id="input-n-val" class="input-n" value="14" min="0" step="2">
-      <div class="btn-wrap">
-        <button type="button" class="lumi-btn lumi-btn--tonal lumi-btn--small" id="btn-step-minus">-2</button>
-        <button type="button" class="lumi-btn lumi-btn--tonal lumi-btn--small" id="btn-step-plus">+2</button>
-      </div>
-    </div>
-
-    <!-- Scale Jump Controls -->
-    <div class="control-group">
-      <span class="lumi-body-m control-label">Échelle de <i>N</i></span>
-      <div class="btn-wrap">
-        <button type="button" class="lumi-btn lumi-btn--tonal lumi-btn--small" id="btn-add-1k">+1 000</button>
-        <button type="button" class="lumi-btn lumi-btn--tonal lumi-btn--small" id="btn-add-10k">+10 000</button>
-        <button type="button" class="lumi-btn lumi-btn--tonal lumi-btn--small" id="btn-add-1m">+1 000 000</button>
-        <button type="button" class="lumi-btn lumi-btn--accent lumi-btn--small" id="btn-mult-100">× 100 N</button>
-      </div>
-    </div>
-  </div>
-
 </div>
 
 <script>
-  // R30 coprimes
   const R30 = [1, 7, 11, 13, 17, 19, 23, 29];
+  let currentLang = 'FR';
 
-  // Single source of state
-  const state = {
-    N: 14n
+  const dict = {
+    FR: {
+      title: "Roue Modulo 30 & Matrice M(N)",
+      subtitle: "Invariance modulaire & canaux de décomposition |T₃₀(N)| ≥ 3",
+      labelN: "Grand Entier N",
+      evenNotice: "Saisie libre d'entiers pairs",
+      chipMod: "Réduction N mod 30 :",
+      chipChannels: "Canaux |T₃₀(N)| :",
+      panelWheel: "Roue R₃₀ & Cordes d'Incidence",
+      panelMatrix: "Matrice d'Incidence M(N) [8 × 8]",
+      minimalTag: "3 (Minimal)"
+    },
+    EN: {
+      title: "Modulo 30 Wheel & M(N) Matrix",
+      subtitle: "Modular invariance & decomposition channels |T₃₀(N)| ≥ 3",
+      labelN: "Big Integer N",
+      evenNotice: "Even integer input",
+      chipMod: "Reduction N mod 30:",
+      chipChannels: "Channels |T₃₀(N)|:",
+      panelWheel: "R₃₀ Wheel & Incidence Chords",
+      panelMatrix: "Incidence Matrix M(N) [8 × 8]",
+      minimalTag: "3 (Minimal)"
+    }
   };
 
-  // Helper to resolve Lumi tokens in JS context
   function getCssVar(name) {
     if (!name) return '';
     const clean = name.replace(/^var\(/, '').replace(/\)$/, '').trim();
     return getComputedStyle(document.documentElement).getPropertyValue(clean.startsWith('--') ? clean : '--' + clean).trim();
   }
 
-  // Calculate active pairs for a given bigint N
-  function getActivePairs(nBig) {
-    const mod = Number(nBig % 30n);
-    const pairs = [];
-    const activeNodes = new Set();
+  function toggleLang() {
+    currentLang = currentLang === 'FR' ? 'EN' : 'FR';
+    document.getElementById('btn-lang').innerText = currentLang === 'FR' ? 'EN' : 'FR';
     
-    for (let i = 0; i < R30.length; i++) {
-      for (let j = 0; j < R30.length; j++) {
-        if ((R30[i] + R30[j]) % 30 === mod) {
-          pairs.push({ i, j, r1: R30[i], r2: R30[j] });
-          activeNodes.add(i);
-          activeNodes.add(j);
+    const t = dict[currentLang];
+    document.getElementById('txt-title').innerText = t.title;
+    document.getElementById('txt-subtitle').innerText = t.subtitle;
+    document.getElementById('txt-label-n').innerText = t.labelN;
+    document.getElementById('txt-even-notice').innerText = t.evenNotice;
+    document.getElementById('txt-chip-mod').innerText = t.chipMod;
+    document.getElementById('txt-chip-channels').innerText = t.chipChannels;
+    document.getElementById('txt-panel-wheel').innerText = t.panelWheel;
+    document.getElementById('txt-panel-matrix').innerText = t.panelMatrix;
+
+    updateUI();
+  }
+
+  function getBigN() {
+    const raw = document.getElementById('input-n').value.replace(/\s+/g, '');
+    try {
+      if (!raw || raw === '-') return 0n;
+      return BigInt(raw);
+    } catch {
+      return 0n;
+    }
+  }
+
+  function setBigN(val) {
+    if (val < 0n) val = 0n;
+    document.getElementById('input-n').value = val.toString();
+    updateUI();
+  }
+
+  function stepN(delta) {
+    let n = getBigN();
+    n += BigInt(delta);
+    setBigN(n);
+  }
+
+  function multiplyN(factor) {
+    let n = getBigN();
+    n *= BigInt(factor);
+    setBigN(n);
+  }
+
+  function onInputN() {
+    updateUI();
+  }
+
+  function updateUI() {
+    const n = getBigN();
+    const mod = Number(n % 30n);
+    const positiveMod = (mod + 30) % 30;
+
+    document.getElementById('val-mod').innerText = positiveMod;
+
+    // Calculate active pairs in R30 x R30
+    const activePairs = [];
+    const matrix = Array(8).fill(0).map(() => Array(8).fill(0));
+
+    for (let i = 0; i < 8; i++) {
+      for (let j = 0; j < 8; j++) {
+        if ((R30[i] + R30[j]) % 30 === positiveMod) {
+          matrix[i][j] = 1;
+          activePairs.push([R30[i], R30[j]]);
         }
       }
     }
-    return { mod, pairs, activeNodes };
-  }
 
-  // Format big integers nicely
-  function formatBigInt(val) {
-    const str = val.toString();
-    return str.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  }
-
-  // Main UI render dispatcher
-  function updateViz() {
-    const { mod, pairs, activeNodes } = getActivePairs(state.N);
-
-    // 1. KPI Readouts
-    try {
-      document.getElementById('kpi-n').textContent = formatBigInt(state.N);
-      document.getElementById('kpi-mod').textContent = mod;
-      
-      const count = pairs.length;
-      const kpiChannels = document.getElementById('kpi-channels');
-      if (mod % 2 === 0) {
-        if (kpiChannels) kpiChannels.textContent = `${count} (≥ 3)`;
-        kpiChannels.style.color = getCssVar('--primary');
-      } else {
-        if (kpiChannels) kpiChannels.textContent = `${count} (Pair requise)`;
-        kpiChannels.style.color = getCssVar('--error');
-      }
-
-      // Sync input value if safe
-      const inputEl = document.getElementById('input-n-val');
-      if (document.activeElement !== inputEl) {
-        inputEl.value = state.N.toString();
-      }
-    } catch (err) {
-      showErrorFallback('header-zone', err);
+    // Count distinct active channels
+    let channelCount = 0;
+    for (let i = 0; i < 8; i++) {
+      if (matrix[i].includes(1)) channelCount++;
     }
 
-    // 2. Render Wheel Canvas
-    try {
-      renderWheel(pairs, activeNodes);
-    } catch (err) {
-      showErrorFallback('wheelCanvas', err);
-    }
+    const t = dict[currentLang];
+    let channelText = channelCount.toString();
+    if (channelCount === 3) channelText += ` (${t.minimalTag})`;
+    document.getElementById('val-channels').innerText = channelText;
 
-    // 3. Render Matrix Grid
-    try {
-      renderMatrix(pairs);
-    } catch (err) {
-      showErrorFallback('matrix-zone', err);
-    }
+    drawWheel(activePairs);
+    renderMatrix(matrix);
   }
 
-  // Draw trigonometric wheel on 2D canvas
-  function renderWheel(pairs, activeNodes) {
+  function drawWheel(activePairs) {
     const canvas = document.getElementById('wheelCanvas');
     if (!canvas) return;
-    const box = canvas.parentElement;
-    const w = box.clientWidth || 260;
-    const h = box.clientHeight || 260;
+
+    const parent = canvas.parentElement;
+    const w = parent.clientWidth || 260;
+    const h = parent.clientHeight || 240;
     const dpr = window.devicePixelRatio || 1;
 
     if (canvas.width !== Math.floor(w * dpr) || canvas.height !== Math.floor(h * dpr)) {
@@ -1341,183 +1348,105 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, w, h);
 
-    const centerX = w / 2;
-    const centerY = h / 2;
-    const radius = Math.min(w, h) * 0.36;
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = Math.min(cx, cy) - 26;
 
-    // Tokens
-    const strokeDefault = getCssVar('--stroke-default') || '#e3e3e3';
-    const primaryColor = getCssVar('--primary') || '#3186ff';
-    const surfaceDim = getCssVar('--surface-dim') || '#f2f0f0';
-    const onSurface = getCssVar('--on-surface') || '#000000';
-    const onSurfaceVariant = getCssVar('--on-surface-variant') || 'rgba(0,0,0,0.55)';
-    const surfaceBright = getCssVar('--surface-bright') || '#ffffff';
+    const strokeDefault = getCssVar('--stroke-default') || '#334155';
+    const primaryColor = getCssVar('--primary') || '#38bdf8';
+    const surfaceDim = getCssVar('--surface-dim') || '#1e293b';
+    const surfaceBright = getCssVar('--surface-bright') || '#090d16';
+    const onSurfaceVariant = getCssVar('--on-surface-variant') || '#94a3b8';
 
-    // Outer wheel circle
+    // Outer circle
     ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
     ctx.strokeStyle = strokeDefault;
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Node coordinates (angles mapped 1..29 to 0..2pi)
-    const nodeCoords = R30.map(r => {
-      // Angle: 1 is top/right, spread evenly according to modulo 30 angle
+    // Map R30 positions
+    const nodeCoords = {};
+    R30.forEach(r => {
       const angle = (r / 30) * 2 * Math.PI - Math.PI / 2;
-      return {
-        r,
-        x: centerX + radius * Math.cos(angle),
-        y: centerY + radius * Math.sin(angle),
-        angle
+      nodeCoords[r] = {
+        x: cx + radius * Math.cos(angle),
+        y: cy + radius * Math.sin(angle)
       };
     });
 
     // Draw active chords
-    pairs.forEach(p => {
-      const n1 = nodeCoords[p.i];
-      const n2 = nodeCoords[p.j];
-
-      ctx.beginPath();
-      if (p.i === p.j) {
-        // Self loop indicator
-        const loopRadius = 14;
-        const lx = n1.x + Math.cos(n1.angle) * loopRadius;
-        const ly = n1.y + Math.sin(n1.angle) * loopRadius;
-        ctx.arc(lx, ly, loopRadius, 0, 2 * Math.PI);
-      } else {
-        ctx.moveTo(n1.x, n1.y);
-        ctx.lineTo(n2.x, n2.y);
+    const drawnChords = new Set();
+    activePairs.forEach(([r1, r2]) => {
+      const key = [r1, r2].sort((a,b) => a-b).join('-');
+      if (!drawnChords.has(key)) {
+        drawnChords.add(key);
+        ctx.beginPath();
+        ctx.moveTo(nodeCoords[r1].x, nodeCoords[r1].y);
+        ctx.lineTo(nodeCoords[r2].x, nodeCoords[r2].y);
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
       }
-      ctx.strokeStyle = primaryColor;
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
     });
 
-    // Draw nodes
-    nodeCoords.forEach((node, idx) => {
-      const isActive = activeNodes.has(idx);
+    // Draw Nodes
+    R30.forEach(r => {
+      const {x, y} = nodeCoords[r];
+      const isActive = activePairs.some(([r1, r2]) => r1 === r || r2 === r);
 
       ctx.beginPath();
-      ctx.arc(node.x, node.y, 14, 0, 2 * Math.PI);
+      ctx.arc(x, y, 13, 0, 2 * Math.PI);
       ctx.fillStyle = isActive ? primaryColor : surfaceDim;
       ctx.fill();
       ctx.strokeStyle = isActive ? primaryColor : strokeDefault;
       ctx.lineWidth = 1.5;
       ctx.stroke();
 
-      // Node label
-      ctx.fillStyle = isActive ? surfaceBright : onSurface;
-      ctx.font = "bold 11px 'Google Sans Code', monospace";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(node.r.toString(), node.x, node.y);
-
-      // Outer angle label
-      const labelDist = radius + 22;
-      const lx = centerX + labelDist * Math.cos(node.angle);
-      const ly = centerY + labelDist * Math.sin(node.angle);
-      ctx.fillStyle = onSurfaceVariant;
-      ctx.font = "10px 'Google Sans Flex', sans-serif";
-      ctx.fillText(`${node.r}`, lx, ly);
+      ctx.fillStyle = isActive ? (surfaceBright || '#ffffff') : onSurfaceVariant;
+      ctx.font = 'bold 11px var(--ff-mono, monospace)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(r.toString(), x, y);
     });
   }
 
-  // Render 8x8 incidence matrix
-  function renderMatrix(pairs) {
-    const container = document.getElementById('matrix-zone');
+  function renderMatrix(matrix) {
+    const container = document.getElementById('matrixContainer');
     if (!container) return;
 
-    // Build active lookup set
-    const activeSet = new Set(pairs.map(p => `${p.i}-${p.j}`));
+    let html = '<table class="matrix-table"><thead><tr><th></th>';
 
-    let html = `<div class="matrix-grid">`;
-    // Corner empty cell
-    html += `<div class="matrix-header"></div>`;
-    // Header row
-    R30.forEach(r => {
-      html += `<div class="matrix-header">${r}</div>`;
-    });
+    for (let j = 0; j < 8; j++) {
+      html += `<th>${R30[j]}</th>`;
+    }
+    html += '</tr></thead><tbody>';
 
-    // Rows
-    R30.forEach((r1, i) => {
-      html += `<div class="matrix-header">${r1}</div>`;
-      R30.forEach((r2, j) => {
-        const isActive = activeSet.has(`${i}-${j}`);
-        const activeClass = isActive ? 'active' : '';
-        const val = isActive ? '1' : '0';
-        html += `<div class="matrix-cell ${activeClass}">${val}</div>`;
-      });
-    });
-
-    html += `</div>`;
+    for (let i = 0; i < 8; i++) {
+      html += `<tr><th>${R30[i]}</th>`;
+      for (let j = 0; j < 8; j++) {
+        const val = matrix[i][j];
+        const activeClass = val === 1 ? 'active' : '';
+        html += `<td class="matrix-cell ${activeClass}">${val}</td>`;
+      }
+      html += '</tr>';
+    }
+    html += '</tbody></table>';
     if (container) container.innerHTML = html;
   }
 
-  // Error fallback component
-  function showErrorFallback(containerId, error) {
-    console.error(`Render error in ${containerId}:`, error);
-    const container = document.getElementById(containerId);
-    if (container) {
-      if (container) container.innerHTML = `
-        <div style="padding: var(--spacing-l); background: var(--surface-dim); border-radius: var(--r-m); text-align: center; color: var(--on-surface-variant);">
-          <p style="margin: 0;" class="lumi-body-m">Affichage indisponible</p>
-          <p style="margin: 4px 0 0 0;" class="lumi-body-s">Une erreur de calcul est survenue.</p>
-        </div>`;
-    }
-  }
+  // Initial render
+  updateUI();
 
-  // Attach controls & event handlers
-  function initControls() {
-    const inputEl = document.getElementById('input-n-val');
+  // Resize handler
+  window.addEventListener('resize', () => {
+    updateUI();
+  });
 
-    const setN = (val) => {
-      if (val < 0n) val = 0n;
-      state.N = val;
-      updateViz();
-    };
-
-    inputEl.addEventListener('change', (e) => {
-      try {
-        const val = BigInt(e.target.value || '0');
-        setN(val);
-      } catch (err) {
-        inputEl.value = state.N.toString();
-      }
-    });
-
-    document.getElementById('btn-step-minus').addEventListener('click', () => {
-      setN(state.N >= 2n ? state.N - 2n : 0n);
-    });
-
-    document.getElementById('btn-step-plus').addEventListener('click', () => {
-      setN(state.N + 2n);
-    });
-
-    document.getElementById('btn-add-1k').addEventListener('click', () => {
-      setN(state.N + 1000n);
-    });
-
-    document.getElementById('btn-add-10k').addEventListener('click', () => {
-      setN(state.N + 10000n);
-    });
-
-    document.getElementById('btn-add-1m').addEventListener('click', () => {
-      setN(state.N + 1000000n);
-    });
-
-    document.getElementById('btn-mult-100').addEventListener('click', () => {
-      setN(state.N === 0n ? 100n : state.N * 100n);
-    });
-  }
-
-  // Entrypoint execution
-  initControls();
-  updateViz();
-
-  // Theme Sync & Auto-Resize
+  // Iframe auto-resize & theme sync
   const applyTheme = t => {
     document.documentElement.setAttribute('data-theme', t);
-    updateViz();
+    updateUI();
   };
   if (!document.documentElement.hasAttribute('data-theme') && window.matchMedia?.('(prefers-color-scheme: dark)').matches) {
     applyTheme('dark');
@@ -1539,7 +1468,6 @@ button.active, button.is-active, button.selected, button.is-selected, button[ari
     new ResizeObserver(() => notifyHeight()).observe(document.querySelector('.widget-container') || document.body);
   })();
 </script>
-
 
 <script>/*luminous-slider-normalizer*/(function(){function f(r){if(!r||r.type!=='range')return;var mn=parseFloat(r.min||'0'),mx=parseFloat(r.max||'100'),v=parseFloat(r.value);if(isNaN(v))v=(mn+mx)/2;var p=mx>mn?((v-mn)/(mx-mn))*100:50;r.style.setProperty('--progress',p+'%');r.style.removeProperty('--slider-fill');}function all(){document.querySelectorAll('input[type="range"], .lumi-slider').forEach(f);}document.addEventListener('input',function(e){f(e.target);});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',all);else all();})();</script>
 </body>
